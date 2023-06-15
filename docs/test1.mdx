@@ -1,25 +1,281 @@
+1. What is the Call Kit Call Kit is a prebuilt feature-rich call component, which enables you to build one-on-one and group voice/video calls into your app with only a few lines of code. And it includes the business logic with the UI, you can add or remove features accordingly by customizing UI components.
+2. Quick start with call invitation Here is the preview of call invitation effect:
+
+![invitation_calls.gif](https://storage.zego.im/sdk-doc/Pics/ZegoUIKit/Flutter/call/invitation_calls.gif)To integrate the calling feature with invitation function into your app, the following steps are required: 1. Create a project in the ZEGOCLOUD console and obtain the AppID and AppSign; 2. Add ZegoUIKitPrebuiltCall as a dependency; 3. Import the SDK; 4. Integrate the SDK; 5. Configure your project; 6. Enable offline call invitation. You can refer this doc for all details: https://docs.zegocloud.com/article/14826.
+
+如何使用requireConfig方法 requireConfig是ZegoUIKitPrebuiltCallInvitationService().init的一个参数，类型是一个参数为(ZegoCallInvitationData data)的回调方法。你可以根据自己的业务需求在此方法做对应设置。比如设置底部按钮、开关设备等等。你需要像下面示例代码一样使用它：
+
+ZegoUIKitPrebuiltCallInvitationService().init( appID: YourAppID, appSign: YourAppSign, userID: userID, userName: userName, plugins: \[ZegoUIKitSignalingPlugin()\], requireConfig: (ZegoCallInvitationData data) { // 处理你的业务逻辑 // 这个方法需要返回一个 ZegoUIKitPrebuiltCallConfig 实例 // var config = (data.invitees.length > 1) // ? ZegoCallType.videoCall == data.type // ? ZegoUIKitPrebuiltCallConfig.groupVideoCall() // : ZegoUIKitPrebuiltCallConfig.groupVoiceCall() // : ZegoCallType.videoCall == data.type // ? ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall() // : ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall(); // return config; }, ); Set avatar for users 在语音通话情况下，默认会把你的用户名首字母作为头像显示。如果你想更改头像，比如使用图片来显示头像，那么你可以在requireConfig方法中，通过config.avatarBuilder返回一个NetworkImage widget来实现。以下是示例代码：
+
+requireConfig: (ZegoCallInvitationData data) { var config = ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall(); config.avatarBuilder = (BuildContext context, Size size, ZegoUIKitUser? user, Map extraInfo) { return user != null ? Container( decoration: BoxDecoration( shape: BoxShape.circle, image: DecorationImage( image: NetworkImage( 'https://your_server/app/avatar/${user.id}.png', ), ), ), ) : const SizedBox(); }; return config; }, Add custom components to user view Customize the foreground view If you want to add some custom components at the top level of the view, such as, you want to add user-level icons, etc., then you can use foregroundBuilder in config.audioVideoViewConfig. This callback will be triggered after corresponding parameter changes. This callback, similar to other Flutter’s Builder callbacks, requires return a custom Widget that will be placed at the top of the view. The position of the Widget can be specified by using the Flutter Positioned.
+
+下面是示例代码:
+
+requireConfig: (ZegoCallInvitationData data) { var config = ZegoUIKitPrebuiltCallConfig.groupVideoCall();
+
 ```
-var q =1;
-var e =2;
-const a = 10;
-
-
+// Modify your custom configurations here.
+config.audioVideoViewConfig = ZegoPrebuiltAudioVideoViewConfig(foregroundBuilder: (BuildContext context, Size size, ZegoUIKitUser? user, Map extraInfo) {
+    return user != null
+        ? Positioned(
+            bottom: 5,
+            left: 5,
+            child: Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                  image: NetworkImage(
+                    'https://your_server/app/level_icon/${getUserLevelByID(user.id)}.png',
+                  ),
+                ),
+              ),
+            ),
+          )
+        : const SizedBox();
+  },
+);
+return config;
 
 ```
 
-# hahah
+}, Customize the audio view 在语音通话时默认画面会显示用户头像和一个纯色背景。如果你希望更改背景，比如替换成图片或者更改其颜色，那么你可以在config.audioVideoViewConfig的backgroundBuilder回调中返回一个有效的自定义Widget即可。这个方法在对应的参数变化后都会触发。
 
-* 223
-* 333
+下面是示例代码：
 
-### 差点意思
+requireConfig: (ZegoCallInvitationData data) { var config = ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall();
 
-`ddd`
+```
+// Modify your custom configurations here.
+config.audioVideoViewConfig = ZegoPrebuiltAudioVideoViewConfig(backgroundBuilder: (BuildContext context, Size size, ZegoUIKitUser? user, Map extraInfo) {
+    return user != null
+        ? ImageFiltered(
+            imageFilter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            child: Image(
+              image: NetworkImage(
+                'https://your_server/app/user_image/${user.id}.png',
+              ),
+            ),
+          )
+        : const SizedBox();
+  },
+);
+return config;
 
-~~gggg~~
+```
 
-euuwu
+}, 这是使用backgroundBuilder更改背景的效果预览：
 
-## intrudution
+![](https://storage.zego.im/sdk-doc/Pics/ZegoUIKit/Flutter/blur.gif)Configure layouts 如果你需要更改画面布局，你可以通过config.layout来更改。目前支持picture-in-picture和gallery布局。
 
----
+Picture-in-picture layout picture-in-picture的效果就是全屏显示一个大的画面，然后其他人的画面悬浮在该大画面上显示成小画面。picture-in-picture支持两个参数：isSmallViewDraggable表示布局中的小View是否可以被拖动，默认是允许的；switchLargeOrSmallViewByClick表示是否能通过点击小View来切换大小View的画面，默认是允许的。下面是如何使用picture-in-picture布局的示例代码：
+
+requireConfig: (ZegoCallInvitationData data) { var config = ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall();
+
+```
+// Modify your custom configurations here.
+config.layout = ZegoLayout.pictureInPicture(
+  isSmallViewDraggable: true,
+  switchLargeOrSmallViewByClick: true,
+);
+return config;
+
+```
+
+}, Gallery layout gallery布局的效果是每个人的画面会平局平铺在手机屏幕上，最多支持显示8个人的画面，超过8人后其他人会在一个画面中显示“Others”来表示。gallery布局支持addBorderRadiusAndSpacingBetweenView参数，表示是否在View之间添加圆角和间隙，这个值默认为true。以下是使用gallery布局的示例代码：
+
+requireConfig: (ZegoCallInvitationData data) { var config = ZegoUIKitPrebuiltCallConfig.groupVideoCall();
+
+```
+// Modify your custom configurations here.
+config.layout = ZegoLayout.gallery(
+  addBorderRadiusAndSpacingBetweenView: false,
+);
+return config;
+
+```
+
+}, Implement an audio-only(aka voice-only) call When starting a call, the Call Kit (ZegoUIKitPrebuiltCall) turns on the camera, and microphone, and uses the speaker as the audio output device by default.
+
+To change this default configuration, for example, turn off the camera when you start a call or don't use the speaker (If the speaker is not used, the system's default audio output device, such as ear speaker, headset, Bluetooth, etc., will be used.), you can modify the following configurations:
+
+turnOnCameraWhenJoining: Whether to turn on the camera when the call starts. true: turn on (by default). false: turn off. turnOnMicrophoneWhenJoining: Whether to turn on the microphone when the call starts. true: turn on (by default). false: turn off. useSpeakerWhenJoining: Whether to use the speaker when the call starts. true: use the speaker (by default). false: use the system's default audio output device, such as an ear speaker, headset, Bluetooth, etc. Here is the reference code of how to implement an audio-only call:
+
+requireConfig: (ZegoCallInvitationData data) { var config = ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall();
+
+```
+// Modify your custom configurations here.
+config
+  ..turnOnCameraWhenJoining = false
+  ..turnOnMicrophoneWhenJoining = false
+  ..useSpeakerWhenJoining = true;
+return config;
+
+```
+
+}, Customize the menu bar Add buttons on the menu bar 如果你想修改底部栏的按钮排序，或者删除上面的上面的按钮、往上面添加你自己的按钮，你都可以通过config.topMenuBarConfig参数来做修改。你可以往config.topMenuBarConfig.buttons设置我们提供的几个默认按钮枚举值，设置了就会显示。然后可以通过config.topMenuBarConfig.extendButtons参数来添加你自己的按钮。最后你可以通过设置config.topMenuBarConfig.maxCount参数来控制底部工具栏最多显示几个按钮，默认值是5，有效范围是\[1-5\]个，当按钮数量超过maxCount值，就会在最右边显示有三个点的按钮(⋮)，点击该按钮会弹出一个view以显示其他没有在底部工具栏显示的按钮。
+
+以下是如何更改底部工具栏按钮的示例代码：
+
+requireConfig: (ZegoCallInvitationData data) { var config = ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall();
+
+```
+// Modify your custom configurations here.
+config.bottomMenuBarConfig = ZegoBottomMenuBarConfig(
+  maxCount: 5,
+  extendButtons: [
+    ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          fixedSize: const Size(60, 60),
+          shape: const CircleBorder(),
+          primary: controlBarButtonCheckedBackgroundColor,
+        ),
+        onPressed: () {},
+        child: Icon(Icons.file_copy),
+    ),
+  ],
+  buttons: [
+    ZegoMenuBarButtonName.toggleCameraButton,
+    ZegoMenuBarButtonName.toggleMicrophoneButton,
+    ZegoMenuBarButtonName.switchAudioOutputButton,
+    ZegoMenuBarButtonName.hangUpButton,
+    ZegoMenuBarButtonName.switchCameraButton,
+  ],
+);
+return config;
+
+```
+
+}, Customize the hidden behavior of the menu bar 如果有需要，你还可以通过config.topMenuBarConfig.hideByClick和config.topMenuBarConfig.hideAutomatically参数来控制底部工具栏的隐藏和显示的行为。hideByClick参数可以控制工具栏是否可以通过用户点击屏幕隐藏，默认是true。hideAutomatically参数控制工具栏是否在没有用户操作5秒后自动隐藏，默认是true.
+
+Set a hangup confirmation dialog 如果你想在结束通话前（比如用户按下结束通话按钮或者Android系统的返回键）可以给用户弹框确认是否结束通话，你可以通过config.hangUpConfirmInfo参数来设置。 下面是示例代码：
+
+requireConfig: (ZegoCallInvitationData data) { var config = ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall();
+
+```
+// Modify your custom configurations here.
+config.hangUpConfirmDialogInfo = ZegoHangUpConfirmDialogInfo(
+  title: "Hangup confirm",
+  message: "Do you want to hangup?",
+  cancelButtonName: "Cancel",
+  confirmButtonName: "Confirm",
+);
+return config;
+
+```
+
+}, 如果你希望在结束通话前不仅仅弹一个简单的对话框，而是需要做更多复杂的业务逻辑，比如向后台更新一些记录，那么你可以通过config.onHangUpConfirmation参数来设置。这个参数要求你提供一个方法，该方法需要返回一个异步结果。下面是示例代码:
+
+requireConfig: (ZegoCallInvitationData data) { var config = ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall();
+
+```
+// Modify your custom configurations here.
+config.onHangUpConfirmation = (BuildContext context) async {
+  // 向服务器请求更新操作等业务逻辑代码
+  return await showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text("This is your custom dialog"),
+        content: const Text("You can customize this dialog however you like"),
+        actions: [
+          ElevatedButton(
+            child: const Text("Cancel"),
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          ElevatedButton(
+            child: const Text("Exit"),
+            onPressed: () => Navigator.of(context).pop(true),
+          ),
+        ],
+      );
+    },
+  );
+};
+return config;
+
+```
+
+}, 如果你想在通话结束后再弹框或者跳转到其他页面显示本次通话时长和计费信息等，你可以通过设置config.hangup这个参数来监听通话结束的事件，然后在里做你的业务逻辑，展示信息等操作。
+
+Call invitation config Customize the call ringtone Ringtone for call invitation App在前台运行时收到呼叫邀请会弹框并响铃，如果你想更改App在前台时的响铃，可以通过ZegoUIKitPrebuiltCallInvitationService().init方法的ringtoneConfig参数配置。下面是示例代码：
+
+ZegoUIKitPrebuiltCallInvitationService().init( appID: YourAppID, appSign: YourAppSign, userID: userID, userName: userName, plugins: \[ZegoUIKitSignalingPlugin()\], // Modify your custom configurations here. ringtoneConfig: const ZegoRingtoneConfig( incomingCallPath: "assets/ringtone/incomingCallRingtone.mp3", outgoingCallPath: "assets/ringtone/outgoingCallRingtone.mp3", ), ); Ringtone for offline call invitation App在后台或者被杀死后，收到呼叫邀请时的通知响铃是通过ZEGOCLOUD控制台(https://console.zegocloud.com/)配置的。在控制台`Projects Management>In-app Chat添加一个Push Resource ID，在添加时如果选的是Normal类型则可以指定响铃的音频文件。在配置好后，将该Push Resource ID设置到ZegoSendCallInvitationButton的resourceID`参数。以下是示例代码：
+
+ZegoSendCallInvitationButton( isVideoCall: true, resourceID: "zegouikit_call", invitees: \[ ... \], ) Hide the decline button 如果你想用户在接到呼叫邀请时不显示拒接按钮，那么可以将ZegoUIKitPrebuiltCallInvitationService().init方法的showDeclineButton参数设置为false。以下是示例代码：
+
+ZegoUIKitPrebuiltCallInvitationService().init( appID: YourAppID, appSign: YourAppSign, userID: userID, userName: userName, plugins: \[ZegoUIKitSignalingPlugin()\], showDeclineButton: false, ); Auto re-send call invitation after call timeout 有时候你在被呼叫人没有接听电话的时候可能想自动重拨电话（或者叫重新发送通话邀请）。要实现这个功能，你需要完成两个步骤：第一步是监听ZegoUIKitPrebuiltCallInvitationEvents的onOutgoingCallTimeout回调，这个回调会在通话邀请超时后触发；第二步是调用ZegoUIKitPrebuiltCallController的sendCallInvitation方法重新发送通话邀请。
+
+下面代码展示了如何监听onOutgoingCallTimeout回调：
+
+ZegoUIKitPrebuiltCallInvitationService().init( appID: YourAppID, appSign: YourAppSign, userID: userID, userName: userName, notifyWhenAppRunningInBackgroundOrQuit: false, plugins: \[ZegoUIKitSignalingPlugin()\], controller: callInvitationController, events: ZegoUIKitPrebuiltCallInvitationEvents( onOutgoingCallTimeout: (String callID, List callees, bool isVideoCall, ) async { // 在这里做重新发送通话邀请的逻辑 }, ), ); 下面代码展示了如何调用sendCallInvitation方法：
+
+onOutgoingCallTimeout: (String callID, List callees, bool isVideoCall, ) async { await callInvitationController.sendCallInvitation( callID: callID, invitees: callees.map((callee) => ZegoCallUser(callee.id, 'user\_${callee.id}')).toList(), isVideoCall: isVideoCall, ); }, Modify User Interface text 如果你想更改UI上的文本，比如把接受和拒绝按钮文本替换成其他语言，那么你可以通过ZegoUIKitPrebuiltCallInvitationService().innerText参数来更改。以下是示例代码：
+
+ZegoUIKitPrebuiltCallInvitationService() ..innerText.incomingCallPageAcceptButton = "Accept" ..innerText.incomingCallPageDeclineButton = "Decline"; Listen for call invitation event callbacks You can implement further business logic by listening for event callbacks related to the call invitation.
+
+The following are supported event callbacks:
+
+Function() onIncomingCallDeclineButtonPressed: This callback will be triggered when the Decline button is pressed (the callee declines the call invitation). Function() onIncomingCallAcceptButtonPressed: This callback will be triggered when the Accept button is pressed (the callee accepts the call invitation).
+
+Function(String callID, ZegoCallUser caller, ZegoCallType callType, List< ZegoCallUser > callees) onIncomingCallReceived: This callback will be triggered when receiving call invitations.
+
+Function(String callID, ZegoCallUser caller) onIncomingCallCanceled: This callback will be triggered when the caller cancels the call invitation.
+
+Function(String callID, ZegoCallUser caller) onIncomingCallTimeout: The callee will receive a notification through this callback when the callee doesn't respond to the call invitation after a timeout duration.
+
+Function() onOutgoingCallCancelButtonPressed: This callback will be triggered when the Cancel button is pressed (the caller cancels the call invitation).
+
+Function(String callID, ZegoCallUser callee) onOutgoingCallAccepted: The caller will receive a notification through this callback when the callee accepts the call invitation.
+
+Function(String callID, ZegoCallUser callee) onOutgoingCallRejectedCauseBusy: The caller will receive a notification through this callback when the callee rejects the call invitation (the callee is busy).
+
+Function(String callID, ZegoCallUser callee) onOutgoingCallDeclined: The caller will receive a notification through this callback when the callee declines the call invitation actively.
+
+Function(String callID, List< ZegoCallUser > callees) onOutgoingCallTimeout: The caller will receive a notification through this callback when the call invitation didn't get responses after a timeout duration.
+
+Here is the reference code of how to use the callback functions:
+
+ZegoUIKitPrebuiltCallInvitationService().init( appID: YourAppID, appSign: YourAppSign, userID: userID, userName: userName, events: ZegoUIKitPrebuiltCallInvitationEvents( onIncomingCallDeclineButtonPressed: () { /// Add your custom logic here. }, onIncomingCallAcceptButtonPressed: () { /// Add your custom logic here. }, onIncomingCallReceived: (String callID, ZegoCallUser caller, ZegoCallType callType, List callees) { /// Add your custom logic here. }, onIncomingCallCanceled: (String callID, ZegoCallUser caller) { /// Add your custom logic here. }, onIncomingCallTimeout: (String callID, ZegoCallUser caller) { /// Add your custom logic here. }, onOutgoingCallCancelButtonPressed: () { /// Add your custom logic here. }, onOutgoingCallAccepted: (String callID, ZegoCallUser callee) { /// Add your custom logic here. }, onOutgoingCallRejectedCauseBusy: (String callID, ZegoCallUser callee) { /// Add your custom logic here. }, onOutgoingCallDeclined: (String callID, ZegoCallUser callee) { /// Add your custom logic here. }, onOutgoingCallTimeout: (String callID, List callees) { /// Add your custom logic here. }, ), plugins: \[ZegoUIKitSignalingPlugin()\], ); 最小化通话窗口 最小化窗口效果就是在你通话过程中，可以将通话窗口变成一个可以在app内拖动的小窗口。这个时候你可以在保持通话的情况下操作app的其他功能，比如查看用户信息，查看账单等等。如果你要实现通话窗口最小化的效果，那么你有两个步骤需要完成。第一步是在requireConfig回调中，将ZegoMenuBarButtonName.minimizingButton添加到ZegoUIKitPrebuiltCallConfig的topMenuBarConfig配置项中；第二步是在MaterialApp的builder方法中将ZegoUIKitPrebuiltCallMiniOverlayPage组件插入Stack的children中返回。
+
+下面的代码演示了如何将ZegoMenuBarButtonName.minimizingButton添加到ZegoUIKitPrebuiltCallConfig的topMenuBarConfig配置项中：
+
+requireConfig: (ZegoCallInvitationData data) { var config = ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall(); /// show minimizing button config.topMenuBarConfig.isVisible = true; config.topMenuBarConfig.buttons.insert(0, ZegoMenuBarButtonName.minimizingButton);
+
+```
+return config;
+
+```
+
+}, 下面代码演示了如何将ZegoUIKitPrebuiltCallMiniOverlayPage组件插入MaterialApp的children中：
+
+/// 最小化通话窗口：Step 1/3: Declare a NavigatorState final navigatorKey = GlobalKey();
+
+class MyApp extends StatelessWidget { const MyApp({Key? key}) : super(key: key); @override Widget build(BuildContext context) { return MaterialApp( /// 最小化通话窗口： Step 2/3: Assign the NavigatorState to MaterialApp navigatorKey: navigatorKey, builder: (BuildContext context, Widget? child) { return Stack( children: \[ child!, /// 最小化通话窗口：Step 3/3: Insert ZegoUIKitPrebuiltCallMiniOverlayPage into Overlay, and return the context of NavigatorState in contextQuery. ZegoUIKitPrebuiltCallMiniOverlayPage( contextQuery: () { return navigatorKey.currentState!.context; }, ), \], ); }, ); } }
+
+void main() async { WidgetsFlutterBinding.ensureInitialized();
+
+ZegoUIKit().initLog().then((value) { runApp(const MyApp()); }); } 呼叫邀请排障 呼叫邀请分为在线呼叫邀请和离线呼叫邀请。在线呼叫邀请就是被呼叫者的App处于打开状态并且在前台正在使用的情况；而离线呼叫就是被呼叫者的App现在已经退到后台（你在使用别的App或者在手机的Home页面又或者是锁屏状态）或者已经被杀死（一般手机的操作就是把这个App划走）的情况。 通常在线呼叫邀请功能是很容易集成的，你只需要按要求初始化SDK，默认就能使用在线呼叫邀请。而离线呼叫功能一定是在在线呼叫功能正常工作的情况下再进行额外配置才生效的。
+
+在线呼叫排障 通常在线呼叫可能出现的问题有3个：
+
+一是呼叫只有震动没有声音 请检查一下是否将音频文件放到了assets目录下了、ringtoneConfig中的配置的音频文件路径是否正确和有效、音频文件是否正常播放、音频文件的时长是否小于30s。在保证以上配置都正常的情况下，应该就不会有问题了。
+
+二是只能在指定屏幕才能收到呼叫邀请，切换到某些屏幕就收不到了 这种情况大概率是你将 ZegoUIKitPrebuiltCallInvitationService().init 方法放到了某个特殊屏幕下调用了，这样就会造成你不切换到该屏幕就无法收到呼叫邀请通知，因为Call Kit SDK需要在你App初始化后就开始监听是否有人在给你打电话，所以我们建议是将ZegoUIKitPrebuiltCallInvitationService().init方法的调用时机放到当前用户登录之后马上执行（比如点击了Sign in/Continue with Google/Continue with Apple并收到成功回调后），并且需要避免重复调用这个方法。在确保这个调用时机正确后，你的App应该就能在所有屏幕下收到呼叫邀请了。注意，这个问题同样会造成离线呼叫不可用。
+
+三是呼叫方点击呼叫按钮后UI没有任何反应 这种情况请检查UI上或者控制台是否有提示错误码为6000121的错误提示，如果有这个提示，可能是被叫方不小心调用了ZegoUIKitPrebuiltCallInvitationService().uninit()方法，请确保如果不是在设备上主动切换用户不要调用这个方法。如果没有任何提示信息，那么请确定你正在呼叫的用户信息（userID）是否有效。如果确定以上的情况都正常，那么请记录下呼叫时间、呼叫方的userID以及被叫方的userID，同时取出日志文件联系技术支持分析问题。
+
+离线（App在后台、锁屏或者App被杀死）呼叫排障 离线呼叫的问题比较复杂，特别是Android设备。所以我们需要针对不同表现来确定如何排查故障。在准备排查离线呼叫相关问题前，请必须确保在线的呼叫邀请是正常的，否则排查是没有意义的。
+
+离线后（App在后台、锁屏或者App被杀死），主叫方点击呼叫按钮后被叫方没有任何反应，收不到呼叫邀请通知 如果App在后台、锁屏或者App被杀死后收不到呼叫邀请的通知，请确保你已经按照这个文档Quick start(with call invitation) https://docs.zegocloud.com/article/14826 做好了所有配置，不要跳过任何步骤或者忽略了视频指引。如果你已经确保再次检查了所有步骤没有遗漏，请按以下顺序排查问题：1.检查是否启用了离线推送功能 > 2.App是否开启了必要的权限 > 3.检查被叫方是否正常获取到Push ID > 4.检查是否能收到控制台的Debug消息。如果你想了解具体排查步骤，你可以问我具体步骤如何检查，我会告诉你详细操作步骤。
+
+1. 检查是否启用了离线推送功能 请检查notifyWhenAppRunningInBackgroundOrQuit参数是否设置为true。如果设置为false，那么你在离线时将无法收到呼叫邀请通知。同时请注意，iOS设备需要在Xcode环境调试时将isIOSSandboxEnvironment选项设置为true而在发布到 AppStore 时将这个选项改为false，否则你的产品发布后在离线时将无法收到呼叫邀请通知。
+2. App是否开启了必要的权限 某些Android设备在App安装后默认会禁止该App弹通知，请打开你的App设置，检查通知权限是否都已允许弹通知。
+3. 检查被叫方是否正常获取到Push ID 通常你可以在调试你的App时从IDE（Android Studio/Xcode/VS Code）中查看到控制台日志输出push id或者pushID这样的关键信息，你可以在这里获取到 Push ID ，效果可以查看这个示例图片 (https://user-images.githubusercontent.com/5242852/234798869-a3796613-22b2-433c-9512-0597f0113ea9.jpg) 如果你无法获取正常的Push ID，那么应该是你的证书配置有问题。请再次阅读Quick start文档确保你在控制台的证书是正确的，比如这个效果图 (https://user-images.githubusercontent.com/5242852/234800252-d57944ee-17de-4df6-9ebe-27df20bd718b.png) 。如果你在ZEGOCLOUD控制台配置了证书依然无法获取Push ID，那么对于iOS项目，再检查一下是否证书的Bundle ID是否与你本地项目一致；对于Android项目，请再检查google-service.json的package_name是否与你项目的package name是否一致。如果证书配置好了，项目的信息与证书都对得上，那么应该就可以正常获取Push ID了。
+4. 检查是否能收到控制台的Debug消息 请登录 https://console.zegocloud.com 并跳转到Projects Management > Your Project > Service Management > In-app Chat页面，这时你应该能看到一个Push Debug按钮，请点击这个按钮，在弹出的页面中按这个示例图片信息进行填写 (https://user-images.githubusercontent.com/5242852/234791990-76dd72d1-2655-41fc-909f-96236ad182e4.png) ，然后点击Test按钮。如果你点击Test按钮后，在Push result中看到了Manufacturer Push Servers相关的错误，请点击View details查看更多信息，通过这个信息你可以基本判断问题原因。 如果出现了Manufacturer Push Servers相关的错误，那么大概是由以下几个问题产生的：
+
+被叫方未注册或者未登录，那么测试就会失败，这种情况请确定被叫方的App是否被卸载了，或者被叫方已经退出了App登录。 对于Android设备，你的Firebase项目被修改或者删除了，导致信息不匹配，请登录Firebase控制台进行确定。 对于iOS设备，你的推送证书可能在Apple开发者网站上被修改或者删除了，导致信息不匹配，请登录苹果开发者网站进行确认。 被叫方离线时，只能收到通知样式的提醒，没有接受和拒绝按钮 如果你需要显示系统样式的呼叫通知，那么请你确保参考Quick start中Use system-calling UI章节的步骤进行了所有必要配置。请注意，使用系统样式的呼叫通知在iOS平台使用的是VoIP证书，请确保添加了该类型的证书。同时使用系统样式的呼叫通知，需要在ZEGOCLOUD控制台创建新的Push Resource ID 并保证选择了VoIP和Data message选项。
+
+被叫方离线时，收到呼叫邀请通知时只显示了通知但是没有播放铃声或者播放的是系统铃声 如果没有播放铃声，或者说没有任何声音，首先检查一下手机是否开启了勿扰模式以及App是否有播放铃声的权限。如果是iOS系统，请确保使用的是.caf文件。同时确保在ZEGOCLOUD控制台添加新的Push Resource ID时，文件路径与本地项目匹配。 请注意，如果使用了系统样式的呼叫通知，暂时是不支持修改铃声的。
