@@ -1,7 +1,7 @@
 1. What is the Call Kit Call Kit is a prebuilt feature-rich call component, which enables you to build one-on-one and group voice/video calls into your app with only a few lines of code. And it includes the business logic with the UI, you can add or remove features accordingly by customizing UI components.
 2. Quick start with call invitation Here is the preview of call invitation effect:
 
-![invitation_calls.gif](https://storage.zego.im/sdk-doc/Pics/ZegoUIKit/Flutter/call/invitation_calls.gif)To integrate the calling feature with invitation function into your app, the following steps are required: 1. Create a project in the ZEGOCLOUD console and obtain the AppID and AppSign; 2. Add ZegoUIKitPrebuiltCall as a dependency; 3. Import the SDK; 4. Integrate the SDK; 5. Configure your project; 6. Enable offline call invitation. You can refer this doc for all details: https://docs.zegocloud.com/article/14826.
+To integrate the calling feature with invitation function into your app, the following steps are required: 1. Create a project in the ZEGOCLOUD console and obtain the AppID and AppSign; 2. Add ZegoUIKitPrebuiltCall as a dependency; 3. Import the SDK; 4. Integrate the SDK; 5. Configure your project; 6. Enable offline call invitation. You can refer this doc for all details: https://docs.zegocloud.com/article/14826.
 
 如何使用requireConfig方法 requireConfig是ZegoUIKitPrebuiltCallInvitationService().init的一个参数，类型是一个参数为(ZegoCallInvitationData data)的回调方法。你可以根据自己的业务需求在此方法做对应设置。比如设置底部按钮、开关设备等等。你需要像下面示例代码一样使用它：
 
@@ -38,6 +38,7 @@ config.audioVideoViewConfig = ZegoPrebuiltAudioVideoViewConfig(foregroundBuilder
 );
 return config;
 
+
 ```
 
 }, Customize the audio view 在语音通话时默认画面会显示用户头像和一个纯色背景。如果你希望更改背景，比如替换成图片或者更改其颜色，那么你可以在config.audioVideoViewConfig的backgroundBuilder回调中返回一个有效的自定义Widget即可。这个方法在对应的参数变化后都会触发。
@@ -63,11 +64,12 @@ config.audioVideoViewConfig = ZegoPrebuiltAudioVideoViewConfig(backgroundBuilder
 );
 return config;
 
+
 ```
 
 }, 这是使用backgroundBuilder更改背景的效果预览：
 
-![](https://storage.zego.im/sdk-doc/Pics/ZegoUIKit/Flutter/blur.gif)Configure layouts 如果你需要更改画面布局，你可以通过config.layout来更改。目前支持picture-in-picture和gallery布局。
+Configure layouts 如果你需要更改画面布局，你可以通过config.layout来更改。目前支持picture-in-picture和gallery布局。
 
 Picture-in-picture layout picture-in-picture的效果就是全屏显示一个大的画面，然后其他人的画面悬浮在该大画面上显示成小画面。picture-in-picture支持两个参数：isSmallViewDraggable表示布局中的小View是否可以被拖动，默认是允许的；switchLargeOrSmallViewByClick表示是否能通过点击小View来切换大小View的画面，默认是允许的。下面是如何使用picture-in-picture布局的示例代码：
 
@@ -81,6 +83,7 @@ config.layout = ZegoLayout.pictureInPicture(
 );
 return config;
 
+
 ```
 
 }, Gallery layout gallery布局的效果是每个人的画面会平局平铺在手机屏幕上，最多支持显示8个人的画面，超过8人后其他人会在一个画面中显示“Others”来表示。gallery布局支持addBorderRadiusAndSpacingBetweenView参数，表示是否在View之间添加圆角和间隙，这个值默认为true。以下是使用gallery布局的示例代码：
@@ -93,6 +96,7 @@ config.layout = ZegoLayout.gallery(
   addBorderRadiusAndSpacingBetweenView: false,
 );
 return config;
+
 
 ```
 
@@ -111,6 +115,7 @@ config
   ..turnOnMicrophoneWhenJoining = false
   ..useSpeakerWhenJoining = true;
 return config;
+
 
 ```
 
@@ -145,6 +150,7 @@ config.bottomMenuBarConfig = ZegoBottomMenuBarConfig(
 );
 return config;
 
+
 ```
 
 }, Customize the hidden behavior of the menu bar 如果有需要，你还可以通过config.topMenuBarConfig.hideByClick和config.topMenuBarConfig.hideAutomatically参数来控制底部工具栏的隐藏和显示的行为。hideByClick参数可以控制工具栏是否可以通过用户点击屏幕隐藏，默认是true。hideAutomatically参数控制工具栏是否在没有用户操作5秒后自动隐藏，默认是true.
@@ -162,6 +168,7 @@ config.hangUpConfirmDialogInfo = ZegoHangUpConfirmDialogInfo(
   confirmButtonName: "Confirm",
 );
 return config;
+
 
 ```
 
@@ -195,6 +202,7 @@ config.onHangUpConfirmation = (BuildContext context) async {
   );
 };
 return config;
+
 
 ```
 
@@ -246,6 +254,7 @@ requireConfig: (ZegoCallInvitationData data) { var config = ZegoUIKitPrebuiltCal
 
 ```
 return config;
+
 
 ```
 
